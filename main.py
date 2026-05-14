@@ -1,22 +1,24 @@
 
 
-from flask import Flask, request
+from flask import Flask, request, Response
 import requests
-from jinja2 import defaults
 
 app = Flask(__name__)
 
 
-@app.route('/', defaults={'path': ''}, methods=['POST', 'GET', 'OPTIONS', 'DELETE', 'PUT', 'PATCH'])
-@app.route('/<path:path>', methods=['GET', 'OPTIONS', 'DELETE', 'PUT', 'PATCH'])
-def check_size(path=''):
+
+@app.route("/input", methods=["GET", "POST"])
+def check_size():
     size = request.content_length or 0
     one_GB = 1024**3
     if size > one_GB:
         return "The file is too big"
     else:
-        # forward to HFS
-
+        resp = requests.get(f"{SITE_NAME}{path}")
+        excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]
+        headers = [(name, value) for (name, value) in  resp.raw.headers.items() if name.lower() not in excluded_headers]
+        response = Response(resp.content, resp.status_code, headers)
+        return response
 
 
 
